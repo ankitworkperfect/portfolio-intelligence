@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Portfolio Intelligence | Software Combined</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%232d5bff'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='16' font-weight='bold' font-family='sans-serif'>SC</text></svg>"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#f8f9fc;color:#1a1a2e;font-family:'DM Sans',-apple-system,sans-serif}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#f0f1f5}::-webkit-scrollbar-thumb{background:#2d5bff44;border-radius:3px}
+::selection{background:#2d5bff33}input:focus,textarea:focus{outline:none}button{font-family:inherit}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+.fade-up{animation:fadeUp .4s ease-out both}
+.hover-lift{transition:all .25s cubic-bezier(.34,1.56,.64,1)}.hover-lift:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.glass{background:rgba(255,255,255,.92);backdrop-filter:blur(16px)}
+.spinner{width:20px;height:20px;border:2px solid #2d5bff33;border-top-color:#2d5bff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+.thinking span{animation:blink 1.4s infinite both}.thinking span:nth-child(2){animation-delay:.2s}.thinking span:nth-child(3){animation-delay:.4s}
+.ai-md{line-height:1.7;font-size:13px;color:#2d3748}
+.ai-md h1,.ai-md h2,.ai-md h3{color:#1a1a2e;margin:12px 0 6px;font-weight:600}
+.ai-md h3{font-size:15px}.ai-md h2{font-size:17px}
+.ai-md p{margin:5px 0;color:#4a5568}.ai-md ul,.ai-md ol{margin:5px 0 5px 18px}.ai-md li{margin:3px 0;color:#4a5568}
+.ai-md strong{color:#1a1a2e}.ai-md em{color:#718096}
+.ai-md code{background:#edf2f7;padding:2px 5px;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;color:#2d3748}
+.ai-md table{width:100%;border-collapse:collapse;margin:8px 0;font-size:11px}
+.ai-md th{background:#edf2f7;padding:7px 9px;text-align:left;font-weight:600;border-bottom:2px solid #e2e8f0;color:#1a1a2e}
+.ai-md td{padding:5px 9px;border-bottom:1px solid #edf2f7;color:#2d3748}
+.ai-md blockquote{border-left:3px solid #2d5bff;padding:6px 12px;margin:6px 0;background:#2d5bff08;border-radius:0 5px 5px 0}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useCallback,useRef,useMemo} = React;
+
+// ── MONDAY.COM DATA ─────────────────────────────────────
+async function mGQL(t,q){
+  const r=await fetch("https://api.monday.com/v2",{method:"POST",headers:{"Content-Type":"application/json","Authorization":t,"API-Version":"2024-10"},body:JSON.stringify({query:q})});
+  const j=await r.json();if(j.errors)throw new Error(j.errors[0].message);return j.data;
+}
+async function loadBoards(t){
+  const[c,u]=await Promise.all([
+    mGQL(t,`{boards(ids:5027112477){items_page(limit:25){items{id name group{title}column_values{id type text value}}}}}`),
+    mGQL(t,`{boards(ids:5027112507){items_page(limit:100){items{id name group{title}column_values{id type text value}}}}}`)
+  ]);
+  const cos=c.boards[0].items_page.items.map(i=>{const v={};i.column_values.forEach(c=>{v[c.id]=c});const gt=id=>v[id]?.text||"";const gn=id=>parseFloat(v[id]?.text)||0;const gd=id=>{try{return JSON.parse(v[id]?.value||"null")?.labels?.[0]||v[id]?.text||""}catch{return v[id]?.text||""}};const gs=id=>{try{return JSON.parse(v[id]?.value||"null")?.label||v[id]?.text||""}catch{return v[id]?.text||""}};const gl=id=>{try{return JSON.parse(v[id]?.value||"null")?.text||v[id]?.text||""}catch{return v[id]?.text||""}};
+    return{id:i.id,name:i.name,group:i.group?.title||"",industry:gd("dropdown_mm1arcfb"),hq:gt("text_mm1ak3bh"),ceo:gt("text_mm1ab788"),acquired:gt("date_mm1a75tx"),employees:gd("dropdown_mm1amt5v"),region:gd("dropdown_mm1a93rz"),desc:gl("long_text_mm1aqev6"),acqPrice:gn("numeric_mm1fjt8a"),model:gd("dropdown_mm1fsfka"),target:gt("text_mm1fp2tn"),moat:gt("text_mm1f4b7"),thesis:gl("long_text_mm1fct7k"),boardChair:gt("text_mm1fpcd9"),priority:gs("color_mm1fnjmc"),founded:gn("numeric_mm1fxg5a"),arrAtAcq:gn("numeric_mm1f7ck5"),platform:gt("text_mm1f37k0")};
+  });
+  const ups=u.boards[0].items_page.items.map(i=>{const v={};i.column_values.forEach(c=>{v[c.id]=c});const gn=id=>parseFloat(v[id]?.text)||0;const gs=id=>{try{return JSON.parse(v[id]?.value||"null")?.label||v[id]?.text||""}catch{return v[id]?.text||""}};const gl=id=>{try{return JSON.parse(v[id]?.value||"null")?.text||v[id]?.text||""}catch{return v[id]?.text||""}};
+    return{id:i.id,name:i.name,month:i.group?.title||"",company:i.name.replace(/ - (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}$/,""),arr:gn("numeric_mm1aysez"),mrr:gn("numeric_mm1agec5"),mrrG:gn("numeric_mm1anh6x"),ebitda:gn("numeric_mm1a6vsn"),margin:gn("numeric_mm1a6exn"),churn:gn("numeric_mm1as61p"),hc:gn("numeric_mm1aq68s"),cash:gn("numeric_mm1a7t3f"),runway:gn("numeric_mm1abyv5"),nps:gn("numeric_mm1anjyq"),wins:gl("long_text_mm1afgth"),risks:gl("long_text_mm1anrf7"),outlook:gl("long_text_mm1a5nf"),flag:gs("color_mm1fzcda")};
+  });
+  return{companies:cos,updates:ups};
+}
+
+// ── CLAUDE API ──────────────────────────────────────────
+function buildSys(companies,updates){
+  const coS=companies.map(c=>`- ${c.name}: ${c.industry}, ${c.hq}, CEO: ${c.ceo}, Acquired: ${c.acquired} for $${c.acqPrice}M, ARR at acq: $${c.arrAtAcq}M, Model: ${c.model}, Employees: ${c.employees}, Region: ${c.region}, Moat: ${c.moat}, Priority: ${c.priority}, Board Chair: ${c.boardChair}, Platform: ${c.platform}${c.thesis?', Thesis: '+c.thesis:''}`).join("\n");
+  const mo=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const months=[...new Set(updates.map(u=>u.month))].sort((a,b)=>{const yA=parseInt(a.match(/\d{4}/)?.[0]||"0"),yB=parseInt(b.match(/\d{4}/)?.[0]||"0");if(yA!==yB)return yA-yB;return mo.findIndex(m=>a.includes(m))-mo.findIndex(m=>b.includes(m));});
+  const upS=months.map(m=>{const items=updates.filter(u=>u.month===m);return`\n### ${m}\n`+items.map(u=>`- ${u.company}: ARR=$${(u.arr/1e6).toFixed(2)}M, MRR=$${(u.mrr/1e6).toFixed(2)}M, MRR Growth=${u.mrrG}%, EBITDA=$${(u.ebitda/1e6).toFixed(2)}M, EBITDA Margin=${u.margin}%, Churn=${u.churn}%, Headcount=${u.hc}, Cash=$${(u.cash/1e6).toFixed(2)}M, Runway=${u.runway}mo, NPS=${u.nps}, Flag=${u.flag}${u.wins?', Wins: '+u.wins.substring(0,200):''}${u.risks?', Risks: '+u.risks.substring(0,200):''}${u.outlook?', Outlook: '+u.outlook.substring(0,150):''}`).join("\n");}).join("\n");
+  return`You are the Portfolio Intelligence AI for Software Combined, a PE firm with a "buy, optimize, hold" strategy for B2B software companies.\n\nBelow is LIVE data from monday.com. Use it precisely.\n\n## Portfolio Companies (${companies.length})\n${coS}\n\n## Monthly Performance\n${upS}\n\n## Role\n- Strategic PE advisor to CEO Evert den Hollander (finance) and CRO Stefan Jansen (risk/strategy).\n- Reference specific numbers. Never fabricate.\n- Use markdown tables for comparisons.\n- Provide strategic analysis with actionable recommendations.\n- Flag risks: churn >3%, runway <12 months, declining margins.\n- Be concise but insightful.`;
+}
+async function callClaude(msgs,sys,ak){
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":ak,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:4096,system:sys,messages:msgs})});
+  if(!r.ok){const e=await r.text();throw new Error(`API ${r.status}: ${e.substring(0,300)}`);}
+  const d=await r.json();return d.content.filter(b=>b.type==="text").map(b=>b.text).join("\n\n")||"No response.";
+}
+
+// ── Helpers ──────────────────────────────────────────────
+const fmt=n=>n>=1e6?`$${(n/1e6).toFixed(1)}M`:n>=1e3?`$${(n/1e3).toFixed(0)}K`:`$${n}`;
+const fc=f=>f.includes("Done")||f.includes("Healthy")?"#0e9f6e":f.includes("Working")||f.includes("Watch")?"#d97706":"#dc2626";
+const fb=f=>f.includes("Done")||f.includes("Healthy")?"rgba(14,159,110,.06)":f.includes("Working")||f.includes("Watch")?"rgba(217,119,6,.06)":"rgba(220,38,38,.06)";
+const pc=p=>p.includes("Working")||p.includes("Growth")?"#2d5bff":p.includes("Done")||p.includes("Optimize")?"#0e9f6e":"#dc2626";
+const fl=f=>f.includes("Done")?"Healthy":f.includes("Working")?"Watch":f.includes("Stuck")?"At Risk":f||"—";
+const pl=p=>p.includes("Working")?"Growth":p.includes("Done")?"Optimize":p.includes("Stuck")?"Stabilize":p||"—";
+
+function Spark({data,color="#2d5bff",w=80,h=28}){if(!data||data.length<2)return null;const mn=Math.min(...data),mx=Math.max(...data),r=mx-mn||1;return<svg width={w} height={h}><polyline points={data.map((v,i)=>`${(i/(data.length-1))*w},${h-((v-mn)/r)*(h-4)-2}`).join(" ")} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;}
+function Bars({data,labels,color="#2d5bff",h=150}){const mx=Math.max(...data);return<div style={{display:"flex",alignItems:"flex-end",gap:5,height:h,padding:"0 2px"}}>{data.map((v,i)=><div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}><span style={{fontSize:9,color:"#718096",fontFamily:"'DM Mono',monospace"}}>{fmt(v)}</span><div style={{width:"100%",maxWidth:44,borderRadius:4,height:`${(v/mx)*(h-36)}px`,background:`linear-gradient(180deg,${color}cc,${color}55)`}}/><span style={{fontSize:8,color:"#718096",fontFamily:"'DM Mono',monospace",whiteSpace:"nowrap"}}>{labels[i]}</span></div>)}</div>;}
+
+// ══════════════════════════════════════════════════════════
+// MAIN APP
+// ══════════════════════════════════════════════════════════
+function App(){
+  const[mt,setMt]=useState(sessionStorage.getItem("mt")||"");
+  const[ak,setAk]=useState(sessionStorage.getItem("ak")||"");
+  const[authed,setAuthed]=useState(false);
+  const[loading,setLoading]=useState(false);
+  const[err,setErr]=useState("");
+  const[cos,setCos]=useState([]);
+  const[ups,setUps]=useState([]);
+  const[view,setView]=useState("dashboard");
+  const[sel,setSel]=useState(null);
+  const[msgs,setMsgs]=useState([]);
+  const[inp,setInp]=useState("");
+  const[aiL,setAiL]=useState(false);
+  const chatEnd=useRef(null);
+
+  const load=useCallback(async()=>{setLoading(true);setErr("");try{const d=await loadBoards(mt);setCos(d.companies);setUps(d.updates);setAuthed(true);sessionStorage.setItem("mt",mt);sessionStorage.setItem("ak",ak);}catch(e){setErr(e.message);}setLoading(false);},[mt,ak]);
+  const refresh=useCallback(async()=>{try{const d=await loadBoards(mt);setCos(d.companies);setUps(d.updates);}catch(e){console.error(e);}},[mt]);
+
+  const mos=useMemo(()=>{const o=["January","February","March","April","May","June","July","August","September","October","November","December"];return[...new Set(ups.map(u=>u.month))].sort((a,b)=>{const yA=parseInt(a.match(/\d{4}/)?.[0]||"0"),yB=parseInt(b.match(/\d{4}/)?.[0]||"0");if(yA!==yB)return yA-yB;return o.findIndex(m=>a.includes(m))-o.findIndex(m=>b.includes(m));});},[ups]);
+  const lat=useMemo(()=>ups.filter(u=>u.month===mos[mos.length-1]),[ups,mos]);
+  const tARR=lat.reduce((s,c)=>s+c.arr,0);
+  const aM=lat.length?lat.reduce((s,c)=>s+c.margin,0)/lat.length:0;
+  const aC=lat.length?lat.reduce((s,c)=>s+c.churn,0)/lat.length:0;
+  const tHC=lat.reduce((s,c)=>s+c.hc,0);
+  const fC=lat.filter(c=>!c.flag.includes("Done")&&!c.flag.includes("Healthy")&&c.flag!=="").length;
+  const sysP=useMemo(()=>buildSys(cos,ups),[cos,ups]);
+
+  const send=useCallback(async()=>{if(!inp.trim()||aiL)return;const um={role:"user",content:inp};const nm=[...msgs,um];setMsgs(nm);setInp("");setAiL(true);try{const r=await callClaude(nm.map(m=>({role:m.role,content:m.content})),sysP,ak);setMsgs([...nm,{role:"assistant",content:r}]);}catch(e){setMsgs([...nm,{role:"assistant",content:`**Error:** ${e.message}`}]);}setAiL(false);},[inp,msgs,aiL,ak,sysP]);
+  useEffect(()=>{chatEnd.current?.scrollIntoView({behavior:"smooth"})},[msgs,aiL]);
+  const openCo=n=>{setSel(n);setView("company")};
+
+  // ── Shared styles ─────────────────────────────────────
+  const card={background:"#ffffff",borderRadius:10,border:"1px solid #e2e8f0"};
+  const cardP={...card,padding:"14px 16px"};
+  const muted="#718096";
+  const txt="#1a1a2e";
+  const sub="#4a5568";
+  const bdr="#e2e8f0";
+  const bg2="#f0f2f7";
+  const accent="#2d5bff";
+
+  // ── LOGIN ─────────────────────────────────────────────
+  if(!authed)return<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#f0f2f7 0%,#e8ebf4 100%)"}}>
+    <div className="fade-up" style={{background:"#fff",borderRadius:16,padding:"40px 36px",border:"1px solid #e2e8f0",maxWidth:440,width:"100%",boxShadow:"0 8px 30px rgba(0,0,0,.06)"}}>
+      <div style={{textAlign:"center",marginBottom:24}}><div style={{width:56,height:56,borderRadius:14,background:"linear-gradient(135deg,#2d5bff,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:700,color:"#fff",margin:"0 auto 16px"}}>SC</div><div style={{fontSize:20,fontWeight:700,color:txt}}>Portfolio Intelligence</div><div style={{fontSize:12,color:muted,marginTop:4}}>AI-powered by Claude + monday.com</div></div>
+      <div style={{marginBottom:12}}><label style={{fontSize:11,color:muted,display:"block",marginBottom:4}}>monday.com API token</label><input value={mt} onChange={e=>setMt(e.target.value)} placeholder="Paste monday.com token" type="password" style={{width:"100%",padding:"10px 12px",borderRadius:8,border:`1px solid ${bdr}`,background:bg2,color:txt,fontSize:12}}/></div>
+      <div style={{marginBottom:16}}><label style={{fontSize:11,color:muted,display:"block",marginBottom:4}}>Anthropic API key</label><input value={ak} onChange={e=>setAk(e.target.value)} placeholder="sk-ant-api03-..." type="password" style={{width:"100%",padding:"10px 12px",borderRadius:8,border:`1px solid ${bdr}`,background:bg2,color:txt,fontSize:12}}/></div>
+      {err&&<div style={{fontSize:11,color:"#dc2626",marginBottom:10,padding:"8px 10px",background:"#fef2f2",borderRadius:6,border:"1px solid #fecaca"}}>{err}</div>}
+      <button onClick={load} disabled={loading||!mt||!ak} style={{width:"100%",padding:"12px",borderRadius:8,border:"none",background:loading?"#e2e8f0":"linear-gradient(135deg,#2d5bff,#7c3aed)",color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer"}}>{loading?<><span className="spinner" style={{width:14,height:14,marginRight:8,verticalAlign:"middle"}}/>Connecting...</>:"Connect & Launch"}</button>
+      <div style={{fontSize:9,color:"#a0aec0",marginTop:14,textAlign:"center"}}>Tokens in session memory only. Never saved to disk.</div>
+    </div>
+  </div>;
+
+  // ── MAIN ──────────────────────────────────────────────
+  return<div style={{minHeight:"100vh"}}>
+    <nav className="glass" style={{padding:"10px 20px",borderBottom:`1px solid ${bdr}`,display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100}}>
+      <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:30,height:30,borderRadius:7,background:"linear-gradient(135deg,#2d5bff,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"#fff"}}>SC</div><div><div style={{fontSize:13,fontWeight:700,color:txt}}>Portfolio Intelligence</div><div style={{fontSize:9,color:muted}}>{mos[mos.length-1]||""} · <span style={{color:"#0e9f6e",cursor:"pointer"}} onClick={refresh}>⟳ Refresh</span> · Powered by Claude</div></div></div>
+      <div style={{display:"flex",gap:3}}>{[{id:"dashboard",l:"Dashboard"},{id:"companies",l:"Companies"},{id:"ai",l:"AI Advisor"}].map(t=><button key={t.id} onClick={()=>setView(t.id)} style={{padding:"5px 13px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:500,background:view===t.id?accent:"transparent",color:view===t.id?"#fff":muted,transition:"all .2s"}}>{t.l}</button>)}</div>
+    </nav>
+
+    <div style={{maxWidth:1180,margin:"0 auto",padding:"18px 20px"}}>
+      {/* DASHBOARD */}
+      {view==="dashboard"&&<div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:16}}>{[{l:"Total ARR",v:fmt(tARR),s:`${lat.length} companies`,c:accent},{l:"Avg EBITDA margin",v:aM.toFixed(1)+"%",s:mos[mos.length-1],c:"#0e9f6e"},{l:"Avg churn",v:aC.toFixed(1)+"%",s:"Portfolio",c:aC>2.5?"#d97706":"#0e9f6e"},{l:"Headcount",v:tHC+"",s:"All companies",c:accent},{l:"Flagged",v:fC+"",s:`of ${lat.length}`,c:fC>0?"#dc2626":"#0e9f6e"}].map((k,i)=><div key={i} className="fade-up hover-lift" style={{...cardP,animationDelay:`${i*.05}s`}}><div style={{fontSize:9,color:muted,textTransform:"uppercase",letterSpacing:".06em",marginBottom:5}}>{k.l}</div><div style={{fontSize:22,fontWeight:700,color:k.c}}>{k.v}</div><div style={{fontSize:9,color:muted,marginTop:2}}>{k.s}</div></div>)}</div>
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+          <div className="fade-up" style={{...card,padding:18}}><div style={{fontSize:12,fontWeight:600,color:txt,marginBottom:14}}>ARR by company</div><Bars data={[...lat].sort((a,b)=>b.arr-a.arr).map(c=>c.arr)} labels={[...lat].sort((a,b)=>b.arr-a.arr).map(c=>c.company.split(" ")[0])}/></div>
+          <div className="fade-up" style={{...card,padding:18}}><div style={{fontSize:12,fontWeight:600,color:txt,marginBottom:10}}>Health overview</div><div style={{display:"flex",flexDirection:"column",gap:5}}>{[...lat].sort((a,b)=>fc(a.flag)==="#dc2626"?-1:fc(b.flag)==="#dc2626"?1:fc(a.flag)==="#d97706"?-1:1).map((c,i)=><div key={i} onClick={()=>openCo(c.company)} className="hover-lift" style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"7px 10px",borderRadius:6,cursor:"pointer",background:fb(c.flag),border:`1px solid ${fc(c.flag)}18`}}><div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:7,height:7,borderRadius:"50%",background:fc(c.flag)}}/><span style={{fontSize:11,fontWeight:500,color:txt}}>{c.company}</span></div><div style={{display:"flex",alignItems:"center",gap:14,fontSize:10,color:muted}}><span>{fmt(c.arr)}</span><span>{c.churn}%</span><span style={{color:fc(c.flag),fontWeight:600,fontSize:9}}>{fl(c.flag)}</span></div></div>)}</div></div>
+        </div>
+
+        <div className="fade-up" style={{...card,padding:18}}><div style={{fontSize:12,fontWeight:600,color:txt,marginBottom:12}}>Trends ({mos.length} months)</div><div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>{lat.map((c,i)=>{const t=mos.map(m=>ups.find(x=>x.company===c.company&&x.month===m)?.arr||0);return<div key={i} onClick={()=>openCo(c.company)} className="hover-lift" style={{padding:"10px 12px",borderRadius:7,cursor:"pointer",border:`1px solid ${bdr}`,background:bg2}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}><span style={{fontSize:10,fontWeight:600,color:txt}}>{c.company}</span><div style={{width:5,height:5,borderRadius:"50%",background:fc(c.flag)}}/></div><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end"}}><div><div style={{fontSize:14,fontWeight:700,color:accent}}>{fmt(c.arr)}</div><div style={{fontSize:8,color:muted}}>ARR</div></div><Spark data={t} color={t[t.length-1]>t[0]?"#0e9f6e":"#dc2626"}/></div></div>})}</div></div>
+      </div>}
+
+      {/* COMPANIES */}
+      {view==="companies"&&<div><div style={{fontSize:17,fontWeight:700,color:txt,marginBottom:14}}>Portfolio companies ({cos.length})</div>{cos.map((c,i)=>{const d=lat.find(l=>l.company===c.name);const g=d&&c.arrAtAcq?((d.arr-c.arrAtAcq*1e6)/(c.arrAtAcq*1e6)*100):0;return<div key={i} onClick={()=>openCo(c.name)} className="fade-up hover-lift" style={{...card,padding:"12px 16px",cursor:"pointer",display:"grid",gridTemplateColumns:"180px 90px 80px 80px 60px 70px 70px 1fr",alignItems:"center",gap:10,marginBottom:6}}><div><div style={{fontSize:12,fontWeight:600,color:txt}}>{c.name}</div><div style={{fontSize:9,color:muted}}>{c.industry} · {c.hq}</div></div><div style={{fontSize:12,fontWeight:600,color:accent}}>{d?fmt(d.arr):"—"}</div><div style={{fontSize:10,color:sub}}>{d?d.margin+"%":"—"} <span style={{fontSize:8,color:muted}}>margin</span></div><div style={{fontSize:10,color:sub}}>{d?d.churn+"%":"—"} <span style={{fontSize:8,color:muted}}>churn</span></div><div style={{fontSize:10,color:sub}}>{d?d.nps:"—"} <span style={{fontSize:8,color:muted}}>NPS</span></div><div style={{fontSize:9,color:pc(c.priority),fontWeight:600,padding:"2px 6px",borderRadius:3,background:pc(c.priority)+"10",textAlign:"center"}}>{pl(c.priority)}</div><div style={{fontSize:9,color:d?fc(d.flag):muted,fontWeight:600,textAlign:"center"}}>{d?fl(d.flag):"—"}</div><div style={{fontSize:9,color:"#0e9f6e",textAlign:"right"}}>{g>0?`+${g.toFixed(0)}% since acq.`:"—"}</div></div>})}</div>}
+
+      {/* COMPANY DETAIL */}
+      {view==="company"&&sel&&(()=>{const co=cos.find(c=>c.name===sel);const d=lat.find(c=>c.company===sel);if(!co||!d)return<div>Not found. <button onClick={()=>setView("dashboard")} style={{background:"none",border:"none",color:accent,cursor:"pointer"}}>Back</button></div>;const at=mos.map(m=>ups.find(x=>x.company===sel&&x.month===m)?.arr||0);const mt2=mos.map(m=>ups.find(x=>x.company===sel&&x.month===m)?.margin||0);const ct=mos.map(m=>ups.find(x=>x.company===sel&&x.month===m)?.churn||0);
+        return<div><button onClick={()=>setView("dashboard")} style={{background:"none",border:"none",color:muted,cursor:"pointer",fontSize:11,padding:0,marginBottom:10}}>← Back</button>
+        <div className="fade-up" style={{display:"flex",alignItems:"center",gap:14,marginBottom:18}}><div style={{width:44,height:44,borderRadius:10,background:"linear-gradient(135deg,#2d5bff,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,fontWeight:700,color:"#fff"}}>{co.name[0]}</div><div><div style={{fontSize:20,fontWeight:700,color:txt}}>{co.name}</div><div style={{fontSize:11,color:muted}}>{co.industry} · {co.hq} · CEO: {co.ceo} · Chair: {co.boardChair}</div></div><div style={{marginLeft:"auto",display:"flex",gap:6}}><span style={{fontSize:9,padding:"3px 8px",borderRadius:4,background:pc(co.priority)+"12",color:pc(co.priority),fontWeight:600}}>{pl(co.priority)}</span><span style={{fontSize:9,padding:"3px 8px",borderRadius:4,background:fb(d.flag),color:fc(d.flag),fontWeight:600}}>{fl(d.flag)}</span></div></div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8,marginBottom:14}}>{[{l:"ARR",v:fmt(d.arr),t:at,c:accent},{l:"EBITDA Margin",v:d.margin+"%",t:mt2,c:"#0e9f6e"},{l:"Churn",v:d.churn+"%",t:ct,c:d.churn>3?"#dc2626":"#0e9f6e"},{l:"NPS",v:d.nps+"",c:d.nps>65?"#0e9f6e":"#d97706"},{l:"Runway",v:d.runway+"mo",c:d.runway<12?"#dc2626":d.runway<18?"#d97706":"#0e9f6e"}].map((m,i)=><div key={i} style={{...cardP}}><div style={{fontSize:8,color:muted,textTransform:"uppercase",letterSpacing:".06em",marginBottom:5}}>{m.l}</div><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end"}}><div style={{fontSize:18,fontWeight:700,color:m.c}}>{m.v}</div>{m.t&&<Spark data={m.t} color={m.c} w={55} h={22}/>}</div></div>)}</div>
+        <div style={{...card,padding:14,marginBottom:14}}><div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,fontSize:10,color:sub}}><div><span style={{color:muted}}>Acquired:</span> {co.acquired}</div><div><span style={{color:muted}}>Price:</span> ${co.acqPrice}M</div><div><span style={{color:muted}}>ARR at Acq:</span> ${co.arrAtAcq}M</div><div><span style={{color:muted}}>Growth:</span> <span style={{color:"#0e9f6e"}}>+{((d.arr/(co.arrAtAcq*1e6)-1)*100).toFixed(0)}%</span></div><div><span style={{color:muted}}>Model:</span> {co.model}</div><div><span style={{color:muted}}>Platform:</span> {co.platform}</div><div><span style={{color:muted}}>Employees:</span> {co.employees}</div><div><span style={{color:muted}}>Moat:</span> {co.moat}</div></div></div>
+        <button onClick={()=>{setView("ai");setInp(`Give me a strategic analysis of ${co.name}: current performance, key risks, and recommended actions.`);}} style={{padding:"8px 16px",borderRadius:6,border:`1px solid ${accent}33`,background:`${accent}08`,color:accent,fontSize:11,fontWeight:600,cursor:"pointer"}}>Ask AI about {co.name} →</button>
+      </div>})()}
+
+      {/* AI ADVISOR */}
+      {view==="ai"&&<div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 100px)"}}>
+        <div style={{textAlign:"center",marginBottom:10}}><div style={{fontSize:18,fontWeight:700,color:txt,marginBottom:2}}>AI portfolio advisor</div><div style={{fontSize:11,color:muted}}>Claude analyses live monday.com data · {cos.length} companies · {mos.length} months</div></div>
+        <div style={{flex:1,overflowY:"auto",marginBottom:10,padding:"0 4px"}}>
+          {msgs.length===0&&<div className="fade-up" style={{...card,padding:20,textAlign:"center"}}><div style={{fontSize:13,fontWeight:600,color:txt,marginBottom:10}}>Ask anything about the portfolio</div><div style={{fontSize:11,color:muted,marginBottom:14}}>Claude has access to all your live monday.com board data</div><div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>{["What's our total portfolio ARR and how has it trended?","Which companies need immediate attention and why?","Compare Omnitronics and Scope Systems","What should we do about Removify's cash situation?","Give me a board-ready portfolio health summary","Which companies have the best growth trajectory?","What are the biggest risks across the portfolio?","Recommend capital allocation priorities for next quarter"].map((q,i)=><button key={i} onClick={()=>setInp(q)} style={{padding:"6px 12px",borderRadius:6,border:`1px solid ${bdr}`,background:bg2,color:sub,fontSize:10,cursor:"pointer",textAlign:"left",transition:"all .2s"}}>{q}</button>)}</div></div>}
+          {msgs.map((m,i)=><div key={i} style={{background:m.role==="user"?`${accent}06`:"#fff",border:`1px solid ${m.role==="user"?accent+"20":bdr}`,borderRadius:12,padding:m.role==="user"?"12px 16px":"16px",marginBottom:10}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>{m.role==="user"?<div style={{width:18,height:18,borderRadius:5,background:accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff"}}>U</div>:<div style={{width:18,height:18,borderRadius:5,background:"linear-gradient(135deg,#2d5bff,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff"}}>AI</div>}<span style={{fontSize:10,color:muted}}>{m.role==="user"?"You":"Portfolio Intelligence AI"}</span>{m.role==="assistant"&&<span style={{fontSize:8,color:"#0e9f6e88",marginLeft:"auto"}}>● Live monday.com data</span>}</div>
+            {m.role==="user"?<div style={{fontSize:13,color:txt}}>{m.content}</div>:<div className="ai-md" dangerouslySetInnerHTML={{__html:marked.parse(m.content)}}/>}
+          </div>)}
+          {aiL&&<div style={{...card,padding:16,marginBottom:10}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}><div style={{width:18,height:18,borderRadius:5,background:"linear-gradient(135deg,#2d5bff,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff"}}>AI</div><span style={{fontSize:10,color:muted}}>Analysing portfolio...</span></div><div style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:muted}}><span className="spinner" style={{width:14,height:14}}/><span>Claude is reasoning over your live portfolio data</span><span className="thinking"><span>.</span><span>.</span><span>.</span></span></div></div>}
+          <div ref={chatEnd}/>
+        </div>
+        <div style={{display:"flex",gap:6,...card,padding:5,flexShrink:0}}><input value={inp} onChange={e=>setInp(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send()} placeholder='Ask: "What should we do about Removify?" or "Compare ANZ vs European performance"' style={{flex:1,background:"transparent",border:"none",color:txt,fontSize:12,padding:"10px 12px"}}/><button onClick={send} disabled={aiL||!inp.trim()} style={{padding:"10px 20px",borderRadius:8,border:"none",cursor:"pointer",background:aiL?"#e2e8f0":"linear-gradient(135deg,#2d5bff,#7c3aed)",color:"#fff",fontSize:11,fontWeight:600,opacity:aiL?.6:1}}>{aiL?"Thinking...":"Ask AI"}</button></div>
+      </div>}
+    </div>
+  </div>;
+}
+ReactDOM.render(<App/>,document.getElementById("root"));
+</script>
+</body>
+</html>
